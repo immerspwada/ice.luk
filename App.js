@@ -14,7 +14,8 @@ function App() {
             try {
                 await liff.init({ 
                     liffId: "2006986568-yjrOkKqm",
-                    withLoginOnExternalBrowser: true // Ensure login on external browser
+                    withLoginOnExternalBrowser: true, // Ensure login on external browser
+                    scopes: ["openid", "profile", "chat_message.write"] // Add required scopes
                 });
                 if (!liff.isLoggedIn()) liff.login();
                 const profile = await liff.getProfile();
