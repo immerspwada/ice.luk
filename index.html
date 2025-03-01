@@ -53,6 +53,7 @@
         <option value="หลอดใหญ่">หลอดใหญ่ (80 บาท)</option>
         <option value="น้ำแข็งบด">น้ำแข็งบด (35 บาท)</option>
     </select>
+    <input type="number" id="quantity" placeholder="จำนวนถุง" min="1" />
     <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" />
     <button onclick="getLocation()">รับพิกัด</button>
     <p id="locationInfo">พิกัด: ไม่ทราบ</p>
@@ -98,17 +99,20 @@
             if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
 
             const iceType = document.getElementById("iceType").value;
+            const quantity = document.getElementById("quantity").value;
             const contactNumber = document.getElementById("contactNumber").value;
             if (!contactNumber) return alert("กรุณาใส่เบอร์ติดต่อ");
 
-            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType}\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
+            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
 
-            liff.sendMessages([{ type: "text", text: orderMessage }])
-                .then(() => {
-                    document.getElementById("successMessage").style.display = "block";
-                    alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
-                })
-                .catch((err) => console.error("Error:", err));
+            try {
+                await liff.sendMessages([{ type: "text", text: orderMessage }]);
+                document.getElementById("successMessage").style.display = "block";
+                alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
+            } catch (err) {
+                console.error("Error sending message:", err);
+                alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+            }
         }
 
         initLIFF();

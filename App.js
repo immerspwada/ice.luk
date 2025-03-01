@@ -5,6 +5,7 @@ import "./App.css"; // Import the CSS file
 function App() {
     const [user, setUser] = useState(null);
     const [iceType, setIceType] = useState("หลอดเล็ก");
+    const [quantity, setQuantity] = useState(1);
     const [contactNumber, setContactNumber] = useState("");
     const [location, setLocation] = useState({ latitude: null, longitude: null });
 
@@ -39,13 +40,14 @@ function App() {
 
         if (!contactNumber) return alert("กรุณาใส่เบอร์ติดต่อ");
 
-        const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType}\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${location.latitude}, ${location.longitude}`;
+        const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${location.latitude}, ${location.longitude}`;
 
         try {
             await liff.sendMessages([{ type: "text", text: orderMessage }]);
             alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
         } catch (err) {
-            console.error("Error:", err);
+            console.error("Error sending message:", err);
+            alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
         }
     };
 
@@ -58,6 +60,13 @@ function App() {
                 <option value="หลอดใหญ่">หลอดใหญ่ (80 บาท)</option>
                 <option value="น้ำแข็งบด">น้ำแข็งบด (35 บาท)</option>
             </select>
+            <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="จำนวนถุง"
+                min="1"
+            />
             <input
                 type="text"
                 value={contactNumber}
