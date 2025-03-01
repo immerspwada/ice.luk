@@ -11,10 +11,17 @@ function App() {
 
     useEffect(() => {
         async function initLIFF() {
-            await liff.init({ liffId: "2006986568-yjrOkKqm" });
-            if (!liff.isLoggedIn()) liff.login();
-            const profile = await liff.getProfile();
-            setUser(profile);
+            try {
+                await liff.init({ 
+                    liffId: "2006986568-yjrOkKqm",
+                    withLoginOnExternalBrowser: true // Ensure login on external browser
+                });
+                if (!liff.isLoggedIn()) liff.login();
+                const profile = await liff.getProfile();
+                setUser(profile);
+            } catch (error) {
+                console.error("การเริ่มต้น LIFF ล้มเหลว", error);
+            }
         }
         initLIFF();
     }, []);
@@ -27,7 +34,7 @@ function App() {
                     longitude: position.coords.longitude,
                 });
             }, (error) => {
-                console.error("Error getting location", error);
+                console.error("เกิดข้อผิดพลาดในการรับพิกัด", error);
                 alert("ไม่สามารถรับพิกัดได้");
             });
         } else {
@@ -46,7 +53,7 @@ function App() {
             await liff.sendMessages([{ type: "text", text: orderMessage }]);
             alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
         } catch (err) {
-            console.error("Error sending message:", err);
+            console.error("เกิดข้อผิดพลาดในการส่งข้อความ:", err);
             alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
         }
     };
