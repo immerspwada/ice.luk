@@ -59,14 +59,18 @@
     </select>
     <input type="number" id="quantity" placeholder="จำนวนถุง" min="1" />
     <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" />
+    <input type="text" id="address" placeholder="ที่อยู่" />
     <button onclick="getLocation()">รับพิกัด</button>
     <p id="locationInfo">พิกัด: ไม่ทราบ</p>
     <button onclick="sendOrder()">สั่งซื้อน้ำแข็ง</button>
     <p id="successMessage">ส่งคำสั่งซื้อเรียบร้อยแล้ว!</p>
+    <h3>ประวัติการสั่งซื้อ</h3>
+    <ul id="orderHistory"></ul>
 
     <script>
         let latitude = null;
         let longitude = null;
+        let orderHistory = [];
 
         async function initLIFF() {
             try {
@@ -103,24 +107,63 @@
             }
         }
 
+        function validateOrder() {
+            const contactNumber = document.getElementById("contactNumber").value;
+            const address = document.getElementById("address").value;
+            if (!contactNumber) {
+                alert("กรุณาใส่เบอร์ติดต่อ");
+                return false;
+            }
+            if (!address) {
+                alert("กรุณาใส่ที่อยู่");
+                return false;
+            }
+            return true;
+        }
+
         async function sendOrder() {
             if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
+
+            if (!validateOrder()) return;
 
             const iceType = document.getElementById("iceType").value;
             const quantity = document.getElementById("quantity").value;
             const contactNumber = document.getElementById("contactNumber").value;
-            if (!contactNumber) return alert("กรุณาใส่เบอร์ติดต่อ");
+            const address = document.getElementById("address").value;
 
-            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
+            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
+
+            if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessage}`)) {
+                return;
+            }
+
+            if (!liff.isInClient()) {
+                return alert("กรุณาเปิดแอปนี้ภายในแอป LINE เพื่อส่งคำสั่งซื้อ");
+            }
 
             try {
                 await liff.sendMessages([{ type: "text", text: orderMessage }]);
                 document.getElementById("successMessage").style.display = "block";
-                alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
+                alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว! กรุณากดปุ่มกากบาทที่มุมขวาบนเพื่อปิดแอป");
+
+                // Save order to history
+                const newOrder = { iceType, quantity, contactNumber, address, location: { latitude, longitude }, date: new Date() };
+                orderHistory.push(newOrder);
+                updateOrderHistory();
             } catch (err) {
                 console.error("เกิดข้อผิดพลาดในการส่งข้อความ:", err);
                 alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
             }
+        }
+
+        function updateOrderHistory() {
+            const orderHistoryElement = document.getElementById("orderHistory");
+            orderHistoryElement.innerHTML = "";
+            orderHistory.forEach((order, index) => {
+                const orderElement = document.createElement("li");
+                orderElement.textContent = `${order.date.toLocaleString()}: ${order.iceType} จำนวน ${order.quantity} ถุง, ที่อยู่: ${order.address}, เบอร์ติดต่อ: ${order.contactNumber}, พิกัด: ${order.location.latitude}, ${order.location.longitude}`;
+                orderHistoryElement.appendChild(orderElement);
+            });
         }
 
         initLIFF();
