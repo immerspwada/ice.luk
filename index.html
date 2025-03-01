@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF Test</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+    <h2>สั่งซื้อน้ำแข็งผ่าน LINE LIFF</h2>
+    <p id="userInfo">กำลังโหลดข้อมูล...</p>
+    <button onclick="sendOrder()">สั่งซื้อน้ำแข็ง</button>
+
+    <script>
+        async function initLIFF() {
+            await liff.init({ liffId: "2006986568-yjrOkKqm" });
+
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+
+            const profile = await liff.getProfile();
+            document.getElementById("userInfo").innerText = `👤 ชื่อ: ${profile.displayName}`;
+        }
+
+        async function sendOrder() {
+            if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
+
+            const userId = (await liff.getProfile()).userId;
+            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: 5 ถุง\n📍 สถานที่: บ้านเลขที่ 99/1`;
+
+            liff.sendMessages([{ type: "text", text: orderMessage }])
+                .then(() => alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!"))
+                .catch((err) => console.error("Error:", err));
+        }
+
+        initLIFF();
+    </script>
+</body>
+</html>
