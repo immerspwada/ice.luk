@@ -86,6 +86,7 @@
 
                 const profile = await liff.getProfile();
                 document.getElementById("userInfo").innerText = `👤 ชื่อ: ${profile.displayName}`;
+                fetchOrderHistory();
             } catch (error) {
                 console.error("การเริ่มต้น LIFF ล้มเหลว", error);
                 document.getElementById("userInfo").innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล LIFF";
@@ -121,6 +122,15 @@
             return true;
         }
 
+        function calculateTotalPrice(iceType, quantity) {
+            const prices = {
+                "หลอดเล็ก": 40,
+                "หลอดใหญ่": 80,
+                "น้ำแข็งบด": 35
+            };
+            return prices[iceType] * quantity;
+        }
+
         async function sendOrder() {
             if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
 
@@ -130,8 +140,9 @@
             const quantity = document.getElementById("quantity").value;
             const contactNumber = document.getElementById("contactNumber").value;
             const address = document.getElementById("address").value;
+            const totalPrice = calculateTotalPrice(iceType, quantity);
 
-            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
+            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}\n💰 ราคารวม: ${totalPrice} บาท`;
 
             if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessage}`)) {
                 return;
@@ -147,12 +158,45 @@
                 alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว! กรุณากดปุ่มกากบาทที่มุมขวาบนเพื่อปิดแอป");
 
                 // Save order to history
-                const newOrder = { iceType, quantity, contactNumber, address, location: { latitude, longitude }, date: new Date() };
+                const newOrder = { iceType, quantity, contactNumber, address, location: { latitude, longitude }, date: new Date(), totalPrice };
                 orderHistory.push(newOrder);
                 updateOrderHistory();
+
+                // Save order to CSV
+                const orderData = {
+                    iceType,
+                    quantity,
+                    contactNumber,
+                    address,
+                    latitude,
+                    longitude,
+                    date: new Date().toISOString(),
+                    totalPrice
+                };
+
+                await fetch('/order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                fetchOrderHistory();
             } catch (err) {
                 console.error("เกิดข้อผิดพลาดในการส่งข้อความ:", err);
                 alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
+            }
+        }
+
+        async function fetchOrderHistory() {
+            try {
+                const response = await fetch('/order-history');
+                const data = await response.json();
+                orderHistory = data;
+                updateOrderHistory();
+            } catch (err) {
+                console.error("เกิดข้อผิดพลาดในการดึงประวัติการสั่งซื้อ:", err);
             }
         }
 
@@ -161,7 +205,7 @@
             orderHistoryElement.innerHTML = "";
             orderHistory.forEach((order, index) => {
                 const orderElement = document.createElement("li");
-                orderElement.textContent = `${order.date.toLocaleString()}: ${order.iceType} จำนวน ${order.quantity} ถุง, ที่อยู่: ${order.address}, เบอร์ติดต่อ: ${order.contactNumber}, พิกัด: ${order.location.latitude}, ${order.location.longitude}`;
+                orderElement.textContent = `${new Date(order.date).toLocaleString()}: ${order.iceType} จำนวน ${order.quantity} ถุง, ที่อยู่: ${order.address}, เบอร์ติดต่อ: ${order.contactNumber}, พิกัด: ${order.latitude}, ${order.longitude}, ราคารวม: ${order.totalPrice} บาท`;
                 orderHistoryElement.appendChild(orderElement);
             });
         }

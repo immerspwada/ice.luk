@@ -22,6 +22,7 @@ function App() {
                 if (!liff.isLoggedIn()) liff.login();
                 const profile = await liff.getProfile();
                 setUser(profile);
+                fetchOrderHistory();
             } catch (error) {
                 console.error("การเริ่มต้น LIFF ล้มเหลว", error);
             }
@@ -57,12 +58,22 @@ function App() {
         return true;
     };
 
+    const calculateTotalPrice = () => {
+        const prices = {
+            "หลอดเล็ก": 40,
+            "หลอดใหญ่": 80,
+            "น้ำแข็งบด": 35
+        };
+        return prices[iceType] * quantity;
+    };
+
     const sendOrder = async () => {
         if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
 
         if (!validateOrder()) return;
 
-        const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${location.latitude}, ${location.longitude}`;
+        const totalPrice = calculateTotalPrice();
+        const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${location.latitude}, ${location.longitude}\n💰 ราคารวม: ${totalPrice} บาท`;
 
         if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessage}`)) {
             return;
@@ -77,11 +88,54 @@ function App() {
             alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว! กรุณากดปุ่มกากบาทที่มุมขวาบนเพื่อปิดแอป");
 
             // Save order to history
-            const newOrder = { iceType, quantity, contactNumber, address, location, date: new Date() };
+            const newOrder = { iceType, quantity, contactNumber, address, location, date: new Date(), totalPrice };
             setOrderHistory([...orderHistory, newOrder]);
+
+            // Save order to server
+            const orderData = {
+                iceType,
+                quantity,
+                contactNumber,
+                address,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                date: new Date().toISOString(),
+                totalPrice
+            };
+
+            await fetch('/order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            fetchOrderHistory();
         } catch (err) {
             console.error("เกิดข้อผิดพลาดในการส่งข้อความ:", err);
             alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
+        }
+    };
+
+    const fetchOrderHistory = async () => {
+        try {
+            const response = await fetch('/order-history');
+            const data = await response.json();
+            setOrderHistory(data);
+        } catch (err) {
+            console.error("เกิดข้อผิดพลาดในการดึงประวัติการสั่งซื้อ:", err);
+        }
+    };
+
+    const exportOrders = async () => {
+        try {
+            const response = await fetch('/export-orders');
+            const data = await response.json();
+            alert(`Orders exported to Google Drive. File ID: ${data.fileId}`);
+        } catch (err) {
+            console.error("เกิดข้อผิดพลาดในการส่งออกคำสั่งซื้อ:", err);
+            alert("เกิดข้อผิดพลาดในการส่งออกคำสั่งซื้อ");
         }
     };
 
@@ -119,11 +173,12 @@ function App() {
             <button onClick={getLocation} style={{ width: "100%", maxWidth: "300px" }}>รับพิกัด</button>
             <p>พิกัด: {location.latitude}, {location.longitude}</p>
             <button onClick={sendOrder} style={{ width: "100%", maxWidth: "300px" }}>สั่งซื้อน้ำแข็ง</button>
+            <button onClick={exportOrders} style={{ width: "100%", maxWidth: "300px" }}>ส่งออกคำสั่งซื้อไปยัง Google Drive</button>
             <h3>ประวัติการสั่งซื้อ</h3>
             <ul>
                 {orderHistory.map((order, index) => (
                     <li key={index}>
-                        {order.date.toLocaleString()}: {order.iceType} จำนวน {order.quantity} ถุง, ที่อยู่: {order.address}, เบอร์ติดต่อ: {order.contactNumber}, พิกัด: {order.location.latitude}, {order.location.longitude}
+                        {new Date(order.date).toLocaleString()}: {order.iceType} จำนวน {order.quantity} ถุง, ที่อยู่: {order.address}, เบอร์ติดต่อ: {order.contactNumber}, พิกัด: {order.latitude}, {order.longitude}, ราคารวม: {order.totalPrice} บาท
                     </li>
                 ))}
             </ul>

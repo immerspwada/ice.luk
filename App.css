@@ -23,14 +23,40 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    width: 100%;
+    max-width: 300px;
+    margin: 10px 0;
 }
 
 button:hover {
     background-color: #45a049;
 }
 
-select {
+select, input {
     padding: 10px;
     font-size: 1em;
     margin: 10px 0;
+    width: 100%;
+    max-width: 300px;
+}
+
+#successMessage {
+    display: none;
+    margin-top: 20px;
+    color: green;
+    font-size: 1.2em;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background-color: #fff;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: left;
 }
