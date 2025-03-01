@@ -47,7 +47,7 @@ function App() {
             alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
         } catch (err) {
             console.error("Error sending message:", err);
-            alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+            alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
         }
     };
 
@@ -66,16 +66,18 @@ function App() {
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="จำนวนถุง"
                 min="1"
+                style={{ width: "100%", maxWidth: "300px" }}
             />
             <input
                 type="text"
                 value={contactNumber}
                 onChange={(e) => setContactNumber(e.target.value)}
                 placeholder="เบอร์ติดต่อ"
+                style={{ width: "100%", maxWidth: "300px" }}
             />
-            <button onClick={getLocation}>รับพิกัด</button>
+            <button onClick={getLocation} style={{ width: "100%", maxWidth: "300px" }}>รับพิกัด</button>
             <p>พิกัด: {location.latitude}, {location.longitude}</p>
-            <button onClick={sendOrder}>สั่งซื้อน้ำแข็ง</button>
+            <button onClick={sendOrder} style={{ width: "100%", maxWidth: "300px" }}>สั่งซื้อน้ำแข็ง</button>
         </div>
     );
 }

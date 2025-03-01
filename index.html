@@ -28,6 +28,8 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%;
+            max-width: 300px;
         }
         button:hover {
             background-color: #45a049;
@@ -42,6 +44,8 @@
             padding: 10px;
             font-size: 1em;
             margin: 10px 0;
+            width: 100%;
+            max-width: 300px;
         }
     </style>
 </head>
@@ -111,7 +115,7 @@
                 alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
             } catch (err) {
                 console.error("Error sending message:", err);
-                alert("เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ");
+                alert(`เกิดข้อผิดพลาดในการส่งคำสั่งซื้อ: ${err.message}`);
             }
         }
 
