@@ -5,32 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIFF Test</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h2 {
+            color: #333;
+        }
+        #userInfo {
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #successMessage {
+            display: none;
+            margin-top: 20px;
+            color: green;
+            font-size: 1.2em;
+        }
+        select, input {
+            padding: 10px;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
     <h2>สั่งซื้อน้ำแข็งผ่าน LINE LIFF</h2>
     <p id="userInfo">กำลังโหลดข้อมูล...</p>
+    <select id="iceType">
+        <option value="หลอดเล็ก">หลอดเล็ก (40 บาท)</option>
+        <option value="หลอดใหญ่">หลอดใหญ่ (80 บาท)</option>
+        <option value="น้ำแข็งบด">น้ำแข็งบด (35 บาท)</option>
+    </select>
+    <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" />
+    <button onclick="getLocation()">รับพิกัด</button>
+    <p id="locationInfo">พิกัด: ไม่ทราบ</p>
     <button onclick="sendOrder()">สั่งซื้อน้ำแข็ง</button>
+    <p id="successMessage">ส่งคำสั่งซื้อเรียบร้อยแล้ว!</p>
 
     <script>
+        let latitude = null;
+        let longitude = null;
+
         async function initLIFF() {
-            await liff.init({ liffId: "2006986568-yjrOkKqm" });
+            try {
+                await liff.init({ liffId: "2006986568-yjrOkKqm" });
 
-            if (!liff.isLoggedIn()) {
-                liff.login();
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+
+                const profile = await liff.getProfile();
+                document.getElementById("userInfo").innerText = `👤 ชื่อ: ${profile.displayName}`;
+            } catch (error) {
+                console.error("LIFF initialization failed", error);
+                document.getElementById("userInfo").innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล LIFF";
             }
+        }
 
-            const profile = await liff.getProfile();
-            document.getElementById("userInfo").innerText = `👤 ชื่อ: ${profile.displayName}`;
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                    document.getElementById("locationInfo").innerText = `พิกัด: ${latitude}, ${longitude}`;
+                }, (error) => {
+                    console.error("Error getting location", error);
+                    alert("ไม่สามารถรับพิกัดได้");
+                });
+            } else {
+                alert("เบราว์เซอร์ของคุณไม่รองรับการรับพิกัด");
+            }
         }
 
         async function sendOrder() {
             if (!liff.isLoggedIn()) return alert("กรุณาเข้าสู่ระบบก่อนสั่งซื้อ");
 
-            const userId = (await liff.getProfile()).userId;
-            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: 5 ถุง\n📍 สถานที่: บ้านเลขที่ 99/1`;
+            const iceType = document.getElementById("iceType").value;
+            const contactNumber = document.getElementById("contactNumber").value;
+            if (!contactNumber) return alert("กรุณาใส่เบอร์ติดต่อ");
+
+            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType}\n📍 สถานที่: บ้านเลขที่ 99/1\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}`;
 
             liff.sendMessages([{ type: "text", text: orderMessage }])
-                .then(() => alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!"))
+                .then(() => {
+                    document.getElementById("successMessage").style.display = "block";
+                    alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว!");
+                })
                 .catch((err) => console.error("Error:", err));
         }
 
