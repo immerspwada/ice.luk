@@ -36,9 +36,9 @@
         </div>
         <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" class="w-full p-2 border rounded-lg mt-4">
         <input type="text" id="address" placeholder="ที่อยู่" class="w-full p-2 border rounded-lg mt-4">
-        <button onclick="getLocation()" class="w-full bg-blue-500 text-white p-2 rounded-lg mt-4 hover:bg-blue-600 transition-colors">รับพิกัด</button>
+        <button onclick="getLocation()" class="w-full bg-orange-500 text-white p-2 rounded-lg mt-4 hover:bg-orange-600 transition-colors">รับพิกัด</button>
         <p id="locationInfo" class="text-gray-600 mt-2">พิกัด: ไม่ทราบ</p>
-        <button onclick="sendOrder()" class="w-full bg-green-500 text-white p-2 rounded-lg mt-4 hover:bg-green-600 transition-colors">สั่งซื้อน้ำแข็ง</button>
+        <button onclick="sendOrder()" class="w-full bg-orange-500 text-white p-2 rounded-lg mt-4 hover:bg-orange-600 transition-colors">สั่งซื้อน้ำแข็ง</button>
         <p id="successMessage" class="text-green-600 mt-4 hidden">ส่งคำสั่งซื้อเรียบร้อยแล้ว!</p>
         <h3 class="text-xl font-bold text-gray-800 mt-6">ประวัติการสั่งซื้อ</h3>
         <ul id="orderHistory" class="list-disc list-inside text-gray-700 mt-2"></ul>
@@ -79,6 +79,10 @@
                 }, (error) => {
                     console.error("เกิดข้อผิดพลาดในการรับพิกัด", error);
                     alert("ไม่สามารถรับพิกัดได้");
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 });
             } else {
                 alert("เบราว์เซอร์ของคุณไม่รองรับการรับพิกัด");
@@ -119,8 +123,9 @@
             const contactNumber = document.getElementById("contactNumber").value;
             const address = document.getElementById("address").value;
             const totalPrice = calculateTotalPrice(iceTypes, quantities);
+            const orderDate = new Date().toLocaleString();
 
-            const orderMessages = iceTypes.map((iceType, index) => `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantities[index]} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}\n💰 ราคารวม: ${calculateTotalPrice([iceType], [quantities[index]])} บาท`);
+            const orderMessages = iceTypes.map((iceType, index) => `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantities[index]} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}\n💰 ราคารวม: ${calculateTotalPrice([iceType], [quantities[index]])} บาท\n📅 วันที่สั่ง: ${orderDate}`);
 
             if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessages.join('\n\n')}`)) {
                 return;
