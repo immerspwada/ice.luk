@@ -5,67 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIFF Test</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        h2 {
-            color: #333;
-        }
-        #userInfo {
-            margin: 20px 0;
-            font-size: 1.2em;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #successMessage {
-            display: none;
-            margin-top: 20px;
-            color: green;
-            font-size: 1.2em;
-        }
-        select, input {
-            padding: 10px;
-            font-size: 1em;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 300px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>สั่งซื้อน้ำแข็งผ่าน LINE LIFF</h2>
-    <p id="userInfo">กำลังโหลดข้อมูล...</p>
-    <select id="iceType">
-        <option value="หลอดเล็ก">หลอดเล็ก (40 บาท)</option>
-        <option value="หลอดใหญ่">หลอดใหญ่ (40 บาท)</option>
-        <option value="น้ำแข็งบด">น้ำแข็งบด (40 บาท)</option>
-    </select>
-    <input type="number" id="quantity" placeholder="จำนวนถุง" min="1" />
-    <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" />
-    <input type="text" id="address" placeholder="ที่อยู่" />
-    <button onclick="getLocation()">รับพิกัด</button>
-    <p id="locationInfo">พิกัด: ไม่ทราบ</p>
-    <button onclick="sendOrder()">สั่งซื้อน้ำแข็ง</button>
-    <p id="successMessage">ส่งคำสั่งซื้อเรียบร้อยแล้ว!</p>
-    <h3>ประวัติการสั่งซื้อ</h3>
-    <ul id="orderHistory"></ul>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="container bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">สั่งซื้อน้ำแข็งผ่าน LINE LIFF</h2>
+        <p id="userInfo" class="text-gray-600 mb-4">กำลังโหลดข้อมูล...</p>
+        <div id="iceTypes" class="space-y-4">
+            <div class="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <input type="checkbox" name="iceType" id="iceTypeSmall" value="หลอดเล็ก" class="mr-2">
+                    <label for="iceTypeSmall" class="text-gray-700">หลอดเล็ก (40 บาท)</label>
+                </div>
+                <input type="number" id="quantitySmall" placeholder="จำนวน" min="1" value="1" class="w-20 p-2 border rounded-lg">
+            </div>
+            <div class="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <input type="checkbox" name="iceType" id="iceTypeLarge" value="หลอดใหญ่" class="mr-2">
+                    <label for="iceTypeLarge" class="text-gray-700">หลอดใหญ่ (80 บาท)</label>
+                </div>
+                <input type="number" id="quantityLarge" placeholder="จำนวน" min="1" value="1" class="w-20 p-2 border rounded-lg">
+            </div>
+            <div class="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <div class="flex items-center">
+                    <input type="checkbox" name="iceType" id="iceTypeCrushed" value="น้ำแข็งบด" class="mr-2">
+                    <label for="iceTypeCrushed" class="text-gray-700">น้ำแข็งบด (35 บาท)</label>
+                </div>
+                <input type="number" id="quantityCrushed" placeholder="จำนวน" min="1" value="1" class="w-20 p-2 border rounded-lg">
+            </div>
+        </div>
+        <input type="text" id="contactNumber" placeholder="เบอร์ติดต่อ" class="w-full p-2 border rounded-lg mt-4">
+        <input type="text" id="address" placeholder="ที่อยู่" class="w-full p-2 border rounded-lg mt-4">
+        <button onclick="getLocation()" class="w-full bg-blue-500 text-white p-2 rounded-lg mt-4 hover:bg-blue-600 transition-colors">รับพิกัด</button>
+        <p id="locationInfo" class="text-gray-600 mt-2">พิกัด: ไม่ทราบ</p>
+        <button onclick="sendOrder()" class="w-full bg-green-500 text-white p-2 rounded-lg mt-4 hover:bg-green-600 transition-colors">สั่งซื้อน้ำแข็ง</button>
+        <p id="successMessage" class="text-green-600 mt-4 hidden">ส่งคำสั่งซื้อเรียบร้อยแล้ว!</p>
+        <h3 class="text-xl font-bold text-gray-800 mt-6">ประวัติการสั่งซื้อ</h3>
+        <ul id="orderHistory" class="list-disc list-inside text-gray-700 mt-2"></ul>
+    </div>
 
     <script>
         let latitude = null;
@@ -122,13 +99,13 @@
             return true;
         }
 
-        function calculateTotalPrice(iceType, quantity) {
+        function calculateTotalPrice(iceTypes, quantities) {
             const prices = {
                 "หลอดเล็ก": 40,
                 "หลอดใหญ่": 80,
                 "น้ำแข็งบด": 35
             };
-            return prices[iceType] * quantity;
+            return iceTypes.reduce((total, iceType, index) => total + (prices[iceType] * quantities[index]), 0);
         }
 
         async function sendOrder() {
@@ -136,15 +113,16 @@
 
             if (!validateOrder()) return;
 
-            const iceType = document.getElementById("iceType").value;
-            const quantity = document.getElementById("quantity").value;
+            const iceTypeElements = document.querySelectorAll('#iceTypes input[type="checkbox"]:checked');
+            const iceTypes = Array.from(iceTypeElements).map(el => el.value);
+            const quantities = iceTypes.map(iceType => document.getElementById(`quantity${iceTypeElements[iceTypes.indexOf(iceType)].id.replace('iceType', '')}`).value);
             const contactNumber = document.getElementById("contactNumber").value;
             const address = document.getElementById("address").value;
-            const totalPrice = calculateTotalPrice(iceType, quantity);
+            const totalPrice = calculateTotalPrice(iceTypes, quantities);
 
-            const orderMessage = `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantity} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}\n💰 ราคารวม: ${totalPrice} บาท`;
+            const orderMessages = iceTypes.map((iceType, index) => `🧊 ออเดอร์น้ำแข็ง: ${iceType} จำนวน ${quantities[index]} ถุง\n📍 สถานที่: ${address}\n📞 เบอร์ติดต่อ: ${contactNumber}\n🌐 พิกัด: ${latitude}, ${longitude}\n💰 ราคารวม: ${calculateTotalPrice([iceType], [quantities[index]])} บาท`);
 
-            if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessage}`)) {
+            if (!window.confirm(`ยืนยันออเดอร์:\n\n${orderMessages.join('\n\n')}`)) {
                 return;
             }
 
@@ -153,19 +131,21 @@
             }
 
             try {
-                await liff.sendMessages([{ type: "text", text: orderMessage }]);
+                for (const orderMessage of orderMessages) {
+                    await liff.sendMessages([{ type: "text", text: orderMessage }]);
+                }
                 document.getElementById("successMessage").style.display = "block";
                 alert("ส่งคำสั่งซื้อเรียบร้อยแล้ว! กรุณากดปุ่มกากบาทที่มุมขวาบนเพื่อปิดแอป");
 
                 // Save order to history
-                const newOrder = { iceType, quantity, contactNumber, address, location: { latitude, longitude }, date: new Date(), totalPrice };
+                const newOrder = { iceTypes, quantities, contactNumber, address, location: { latitude, longitude }, date: new Date(), totalPrice };
                 orderHistory.push(newOrder);
                 updateOrderHistory();
 
                 // Save order to CSV
                 const orderData = {
-                    iceType,
-                    quantity,
+                    iceTypes,
+                    quantities,
                     contactNumber,
                     address,
                     latitude,
@@ -205,7 +185,7 @@
             orderHistoryElement.innerHTML = "";
             orderHistory.forEach((order, index) => {
                 const orderElement = document.createElement("li");
-                orderElement.textContent = `${new Date(order.date).toLocaleString()}: ${order.iceType} จำนวน ${order.quantity} ถุง, ที่อยู่: ${order.address}, เบอร์ติดต่อ: ${order.contactNumber}, พิกัด: ${order.latitude}, ${order.longitude}, ราคารวม: ${order.totalPrice} บาท`;
+                orderElement.textContent = `${new Date(order.date).toLocaleString()}: ${order.iceTypes.join(", ")} จำนวน ${order.quantities.join(", ")} ถุง, ที่อยู่: ${order.address}, เบอร์ติดต่อ: ${order.contactNumber}, พิกัด: ${order.location.latitude}, ${order.location.longitude}, ราคารวม: ${order.totalPrice} บาท`;
                 orderHistoryElement.appendChild(orderElement);
             });
         }
