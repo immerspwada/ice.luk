@@ -22,14 +22,14 @@
             <div class="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                 <div class="flex items-center">
                     <input type="checkbox" name="iceType" id="iceTypeLarge" value="หลอดใหญ่" class="mr-2">
-                    <label for="iceTypeLarge" class="text-gray-700">หลอดใหญ่ (80 บาท)</label>
+                    <label for="iceTypeLarge" class="text-gray-700">หลอดใหญ่ (40 บาท)</label>
                 </div>
                 <input type="number" id="quantityLarge" placeholder="จำนวน" min="1" value="1" class="w-20 p-2 border rounded-lg">
             </div>
             <div class="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                 <div class="flex items-center">
                     <input type="checkbox" name="iceType" id="iceTypeCrushed" value="น้ำแข็งบด" class="mr-2">
-                    <label for="iceTypeCrushed" class="text-gray-700">น้ำแข็งบด (35 บาท)</label>
+                    <label for="iceTypeCrushed" class="text-gray-700">น้ำแข็งบด (40 บาท)</label>
                 </div>
                 <input type="number" id="quantityCrushed" placeholder="จำนวน" min="1" value="1" class="w-20 p-2 border rounded-lg">
             </div>
@@ -102,8 +102,8 @@
         function calculateTotalPrice(iceTypes, quantities) {
             const prices = {
                 "หลอดเล็ก": 40,
-                "หลอดใหญ่": 80,
-                "น้ำแข็งบด": 35
+                "หลอดใหญ่": 40,
+                "น้ำแข็งบด": 40
             };
             return iceTypes.reduce((total, iceType, index) => total + (prices[iceType] * quantities[index]), 0);
         }
